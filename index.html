@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genshin Impact Gacha Simulator PRO</title>
+    <!-- Подключаем стили -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="header">
+            <h1>Молитва События</h1>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">💎 <span id="primos" class="primos-val">0</span></div>
+            <div class="stat-item">✨ Гарант: <span id="pity" class="pity-val">0</span>/90</div>
+        </div>
+
+        <button class="action-btn btn-farm" onclick="farmPrimos()">Фармить Камни Истока (+1,600)</button>
+
+        <div class="gacha-box">
+            <button class="action-btn btn-pull" id="btn1" onclick="executePull(1)">1 Молитва</button>
+            <button class="action-btn btn-pull" id="btn10" onclick="executePull(10)">10 Молитв</button>
+        </div>
+
+        <div class="screen-display" id="screen">
+            <div style="color: #444863; font-weight: 500; font-size: 14px;">Здесь отобразятся ваши награды</div>
+        </div>
+
+        <div class="inventory-section">
+            <div class="inv-title">Коллекция Персонажей</div>
+            <div class="inv-grid" id="invGrid"></div>
+        </div>
+    </div>
+
+    <!-- Подключаем базу данных персонажей и логику -->
+    <script src="config.js"></script>
+    <script src="logic.js"></script>
+</body>
+</html>
+:root {
+    --bg-gradient: linear-gradient(135deg, #0c0f1d 0%, #16192b 50%, #232742 100%);
+    --panel-bg: rgba(26, 31, 54, 0.65);
+    --gold: #f3ca52;
+    --purple: #a252f3;
+    --blue: #529af3;
+    --text-light: #ece5d8;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    background: var(--bg-gradient);
+    color: #fff;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 95vh;
+    overflow-x: hidden;
+}
+
+.main-wrapper {
+    background: var(--panel-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    border-radius: 24px;
+    padding: 35px;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+.header text-align: center; margin-bottom: 30px; }
+h1 {
+    font-size: 26px;
+    margin: 0 0 10px 0;
+    background: linear-gradient(90deg, #fff, var(--gold), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+}
+
+.stats-bar {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px 20px;
+    border-radius: 50px;
+    margin-bottom: 25px;
+}
+
+.stat-item { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+.primos-val { color: #4ae3ff; }
+.pity-val { color: var(--gold); }
+
+.action-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+.btn-farm {
+    background: linear-gradient(135deg, #36446e 0%, #1f2742 100%);
+    color: var(--text-light);
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.btn-farm:hover { border-color: var(--gold); }
+.btn-farm:active { transform: scale(0.98); }
+
+.gacha-box { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+.btn-pull { background: linear-gradient(180deg, #f5d470 0%, #c49d3c 100%); color: #111424; border: none; }
+.btn-pull:hover:not(:disabled) { filter: brightness(1.1); }
+.btn-pull:disabled { background: #333; color: #777; cursor: not-allowed; }
+
+.screen-display {
+    background: #090b14;
+    border-radius: 16px;
+    min-height: 100px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 25px;
+}
+
+.drop-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
+.card {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.c5 { background: rgba(243, 202, 82, 0.15); border-color: var(--gold); color: var(--gold); box-shadow: 0 0 12px rgba(243,202,82,0.25); }
+.c4 { background: rgba(162, 82, 243, 0.15); border-color: var(--purple); color: var(--purple); box-shadow: 0 0 12px rgba(162,82,243,0.25); }
+.c3 { color: #8ba2bb; }
+
+.inventory-section { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 20px; }
+.inv-title { font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 12px; font-weight: 700; }
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; max-height: 160px; overflow-y: auto; }
+
+.inv-item { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 8px; text-align: center; font-size: 11px; border: 1px solid rgba(255,255,255,0.05); }
+.inv-item.g5 { border-color: rgba(243, 202, 82, 0.4); color: var(--gold); }
+.inv-item.g4 { border-color: rgba(162, 82, 243, 0.4); color: var(--purple); }
+.quantity { display: block; font-size: 10px; color: #666; margin-top: 3px; }
+.inv-item.g5 .quantity { color: #bca049; }
+.inv-item.g4 .quantity { color: #8754bd; }
+const HERO_DATABASE = {
+    stars5: [
+        { name: "Нахида 🍀" },
+        { name: "Ху Тао 🦋" },
+        { name: "Райдэн ⚡" },
+        { name: "Чжун Ли 🔶" },
+        { name: "Фурина 💧" }
+    ],
+    stars4: [
+        { name: "Беннет 👍" },
+        { name: "Син Цю 📖" },
+        { name: "Фишль 🦅" },
+        { name: "Сян Лин 🐻" },
+        { name: "Куки Синобу 🎭" }
+    ],
+    stars3: [
+        { name: "Дубина переговоров ⚔️" },
+        { name: "Предвестник зари ⚔️" },
+        { name: "Лук изогнутый 🏹" }
+    ]
+};
+let userPrimos = 0;
+let countTo5Star = 0;
+let countTo4Star = 0;
+let userInventory = {};
+
+function renderInterface() {
+    document.getElementById('primos').innerText = userPrimos.toLocaleString();
+    document.getElementById('pity').innerText = countTo5Star;
+
+    document.getElementById('btn1').disabled = userPrimos < 160;
+    document.getElementById('btn10').disabled = userPrimos < 1600;
+
+    const grid = document.getElementById('invGrid');
+    grid.innerHTML = "";
+
+    const sortedItems = Object.keys(userInventory).sort((a, b) => {
+        const isA5 = HERO_DATABASE.stars5.some(h => h.name === a);
+        const isB5 = HERO_DATABASE.stars5.some(h => h.name === b);
+        return isB5 - isA5;
+    });
+
+    sortedItems.forEach(itemName => {
+        const is5Star = HERO_DATABASE.stars5.some(h => h.name === itemName);
+        const is4Star = HERO_DATABASE.stars4.some(h => h.name === itemName);
+        
+        let rarityClass = "c3";
+        if (is5Star) rarityClass = "g5";
+        else if (is4Star) rarityClass = "g4";
+
+        const card = document.createElement('div');
+        card.className = `inv-item ${rarityClass}`;
+        card.innerHTML = `${itemName} <span class="quantity">C${userInventory[itemName] - 1}</span>`;
+        grid.appendChild(card);
+    });
+}
+
+function farmPrimos() {
+    userPrimos += 1600;
+    renderInterface();
+}
+
+function calculateDrop() {
+    countTo5Star++;
+    countTo4Star++;
+
+    if (countTo5Star >= 90 || Math.random() < 0.006) {
+        countTo5Star = 0;
+        return { data: HERO_DATABASE.stars5[Math.floor(Math.random() * HERO_DATABASE.stars5.length)], rarity: 5 };
+    }
+
+    if (countTo4Star >= 10 || Math.random() < 0.051) {
+        countTo4Star = 0;
+        return { data: HERO_DATABASE.stars4[Math.floor(Math.random() * HERO_DATABASE.stars4.length)], rarity: 4 };
+    }
+
+    return { data: HERO_DATABASE.stars3[Math.floor(Math.random() * HERO_DATABASE.stars3.length)], rarity: 3 };
+}
+
+function executePull(amount) {
+    const cost = amount * 160;
+    if (userPrimos < cost) return;
+
+    userPrimos -= cost;
+    const screen = document.getElementById('screen');
+    screen.innerHTML = "";
+
+    const row = document.createElement('div');
+    row.className = "drop-row";
+
+    let delay = 0;
+    for (let i = 0; i < amount; i++) {
+        const drop = calculateDrop();
+        
+        if (drop.rarity > 3) {
+            userInventory[drop.data.name] = (userInventory[drop.data.name] || 0) + 1;
+        }
+
+        const itemCard = document.createElement('div');
+        itemCard.className = `card c${drop.rarity}`;
+        itemCard.innerText = drop.data.name;
+        itemCard.style.animationDelay = `${delay}s`;
+        
+        row.appendChild(itemCard);
+        delay += 0.05;
+    }
+
+    screen.appendChild(row);
+    renderInterface();
+}
+
+renderInterface();
